@@ -16,119 +16,87 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      import React, { useMemo, useState, useRef } from "react";
+      // ⬇️ En CDN NO uses "import/export".
+      // Toma los hooks desde React (global)
+      const { useMemo, useState, useRef } = React;
 
-// Firma Builder — Single-file React component
-// - Usa Tailwind para el layout (ya habilitado en el canvas)
-// - Genera HTML con estilos inline (compatibles con clientes de correo)
-// - Permite previsualizar, copiar HTML y descargar como .html
+      // Firma Builder — Single-file React component
+      function SignatureBuilder() {
+        const [form, setForm] = useState({
+          nombre: "Nicolás Robles",
+          puesto: "Business Advisor",
+          empresa: "Odoo",
+          email: "nrob@odoo.com",
+          tel: "+34911870757",
+          website: "https://www.odoo.com",
+          websiteLabel: "www.odoo.com",
+          linkedin: "https://www.linkedin.com/in/nicolas-x-robles/",
+          linkedinLabel: "linkedin.com/in/nicolas-x-robles",
+          booking: "https://www.odoo.com/book/64dfbeee",
+          bookingLabel: "https://www.odoo.com/book/64dfbeee",
+          avatarUrl: "https://img.mysignature.io/p/e/6/6/e6697d47-7ad2-5c57-97b2-0046c2d0b5ed.png?time=1756382801&uid=878639&sid=1679601",
+          accent1: "#008f8c", // enlaces
+          accent2: "#017e84", // labels
+          text: "#000001",
+          legalCompany: "ODOO ERP SP, S.L.",
+          legalId: "B72659014",
+          legalAddress: "AV. CORTES VALENCIANAS, 58, BAJO 10 - 46015 - VALENCIA - 911870701",
+        });
 
-export default function SignatureBuilder() {
-  const [form, setForm] = useState({
-    nombre: "Nicolás Robles",
-    puesto: "Business Advisor",
-    empresa: "Odoo",
-    email: "nrob@odoo.com",
-    tel: "+34911870757",
-    website: "https://www.odoo.com",
-    websiteLabel: "www.odoo.com",
-    linkedin: "https://www.linkedin.com/in/nicolas-x-robles/",
-    linkedinLabel: "linkedin.com/in/nicolas-x-robles",
-    booking: "https://www.odoo.com/book/64dfbeee",
-    bookingLabel: "https://www.odoo.com/book/64dfbeee",
-    avatarUrl:
-      "https://img.mysignature.io/p/e/6/6/e6697d47-7ad2-5c57-97b2-0046c2d0b5ed.png?time=1756382801&uid=878639&sid=1679601",
-    accent1: "#008f8c", // enlaces
-    accent2: "#017e84", // labels
-    text: "#000001",
-    legalCompany: "ODOO ERP SP, S.L.",
-    legalId: "B72659014",
-    legalAddress:
-      "AV. CORTES VALENCIANAS, 58, BAJO 10 - 46015 - VALENCIA - 911870701",
-  });
+        const htmlRef = useRef("");
 
-  const htmlRef = useRef("");
+        const handleChange = (e) => {
+          const { name, value } = e.target;
+          setForm((f) => ({ ...f, [name]: value }));
+        };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
+        const generatedHTML = useMemo(() => {
+          const {
+            nombre, puesto, empresa, email, tel, website, websiteLabel,
+            linkedin, linkedinLabel, booking, bookingLabel,
+            avatarUrl, accent1, accent2, text,
+            legalCompany, legalId, legalAddress,
+          } = form;
 
-  const generatedHTML = useMemo(() => {
-    const {
-      nombre,
-      puesto,
-      empresa,
-      email,
-      tel,
-      website,
-      websiteLabel,
-      linkedin,
-      linkedinLabel,
-      booking,
-      bookingLabel,
-      avatarUrl,
-      accent1,
-      accent2,
-      text,
-      legalCompany,
-      legalId,
-      legalAddress,
-    } = form;
+          const esc = (s) =>
+            String(s || "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/\"/g, "&quot;");
 
-    const esc = (s) =>
-      String(s || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;");
-
-    const html = `
+          const html = `
 <div data-oe-version="2.0">
   <table cellpadding="0" width="500" style="border-radius:0px;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
-    <tbody style="border-radius:0px;border-style:solid;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
-      <tr style="border-radius:0px;border-style:solid;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
-        <td style="border-radius:0px;border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;margin:0.1px;padding:0;">
-          <table cellpadding="0" style="border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:0px;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-width:0px;caption-side:bottom;border-collapse:collapse;font-size:14.4px;width:387px;" width="387">
-            <tbody style="border-radius:0px;border-style:solid;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
-              <tr style="border-radius:0px;border-style:solid;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
-                <td valign="top" style="border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:0px;border-style:solid;box-sizing:border-box;border-width:0px;margin:0.1px;padding:0px 10px 0px 0px;position:relative;">
-                  <img src="${esc(avatarUrl)}" style="border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:50%;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-width:0px;vertical-align:middle;display:block;min-width:114px;width:114px;height:114px;" alt="" width="114" height="114">
+    <tbody>
+      <tr>
+        <td style="margin:0.1px;padding:0;">
+          <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;width:387px;" width="387">
+            <tbody>
+              <tr>
+                <td valign="top" style="margin:0.1px;padding:0px 10px 0px 0px;position:relative;">
+                  <img src="${esc(avatarUrl)}" style="border-style:none;padding:0;margin:0;vertical-align:middle;display:block;min-width:114px;width:114px;height:114px;border-radius:50%;" alt="" width="114" height="114">
                 </td>
-                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;font-stretch:normal;font-weight:normal;font-variant-emoji:normal;font-variant-position:normal;font-variation-settings:normal;font-feature-settings:normal;font-optical-sizing:auto;font-kerning:auto;font-size-adjust:none;font-variant-alternates:normal;font-variant-east-asian:normal;font-variant-numeric:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-style:normal;border-left-width:1px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:0px;border-style:solid;box-sizing:border-box;border-width:0px 0px 0px 1px;margin:0.1px;padding:0px 10px;font:14.4px/18.3px Arial, Helvetica, sans-serif;color:${esc(
-                  text
-                )};position:relative;border-left-color:${esc(text)};width:20.5px;" valign="middle" width="20.5">
-                  <table cellpadding="0" style="border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:0px;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-width:0px;caption-side:bottom;border-collapse:collapse;color:${esc(
-                    text
-                  )};font-size:14.4px;font-family:Arial, Helvetica, sans-serif;font-weight:normal;font-style:normal;">
-                    <tbody><tr><td style="padding:4px 0 0 0;">&nbsp;<a href="${esc(
-                      linkedin
-                    )}" target="_blank" style="color:${esc(
-      accent1
-    )};text-decoration:none;"></a></td></tr></tbody>
+                <td style="border-left:1px solid ${esc(text)};margin:0.1px;padding:0px 10px;font:14.4px/18.3px Arial, Helvetica, sans-serif;color:${esc(text)};" valign="middle" width="20.5">
+                  <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;color:${esc(text)};font-size:14.4px;font-family:Arial, Helvetica, sans-serif;">
+                    <tbody><tr><td style="padding:4px 0 0 0;">&nbsp;<a href="${esc(linkedin)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;"></a></td></tr></tbody>
                   </table>
                 </td>
-                <td style="border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:0px;border-style:solid;padding:0px 10px 0px 0px;box-sizing:border-box;border-width:0px;margin:0.1px;position:relative;width:241.094px;" valign="top" width="241.094">
-                  <table cellpadding="0" style="border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-radius:0px;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-width:0px;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
+                <td style="padding:0px 10px 0px 0px;position:relative;width:241.094px;" valign="top" width="241.094">
+                  <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
                     <tbody>
                       <tr>
                         <td style="padding:0 0 10px 0;position:relative;">
                           <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
                             <tbody>
                               <tr style="height:22.1016px;">
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:22.1px;font-size:17.3px;margin:0.1px;padding:0;color:${esc(
-                                  text
-                                )};">
+                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:22.1px;font-size:17.3px;margin:0.1px;padding:0;color:${esc(text)};">
                                   <span><b>${esc(nombre)}</b></span>
                                 </td>
                               </tr>
                               <tr style="height:26.2969px;">
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:4px 0;color:${esc(
-                                  text
-                                )};">
-                                  <span>${esc(puesto)}</span> en <span>${esc(
-      empresa
-    )}</span>
+                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:4px 0;color:${esc(text)};">
+                                  <span>${esc(puesto)}</span> en <span>${esc(empresa)}</span>
                                 </td>
                               </tr>
                             </tbody>
@@ -140,47 +108,19 @@ export default function SignatureBuilder() {
                           <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
                             <tbody>
                               <tr>
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(
-                                  text
-                                )};">
-                                  <span style="color:${esc(
-                                    accent2
-                                  )};font-weight:400;">e-Mail:</span> <a href="mailto:${esc(
-      email
-    )}" target="_blank" style="color:${esc(
-      accent1
-    )};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(
-      text
-    )};">${esc(email)}</font></a>
+                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(text)};">
+                                  <span style="color:${esc(accent2)};font-weight:400;">e-Mail:</span> <a href="mailto:${esc(email)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(text)};">${esc(email)}</font></a>
                                 </td>
                               </tr>
                               <tr>
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(
-                                  text
-                                )};">
-                                  <span style="color:${esc(
-                                    accent2
-                                  )};font-weight:400;">Website</span><span>: </span>
-                                  <a href="${esc(website)}" target="_blank" style="color:${esc(
-      accent1
-    )};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(
-      text
-    )};">${esc(websiteLabel)}</font></a>
+                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(text)};">
+                                  <span style="color:${esc(accent2)};font-weight:400;">Website</span><span>: </span>
+                                  <a href="${esc(website)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(text)};">${esc(websiteLabel)}</font></a>
                                 </td>
                               </tr>
                               <tr>
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(
-                                  text
-                                )};">
-                                  <span style="color:${esc(
-                                    accent2
-                                  )};font-weight:400;">Tel:</span> <a href="tel:${esc(
-      tel
-    )}" target="_blank" style="color:${esc(
-      accent1
-    )};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(
-      text
-    )};">${esc(tel)}</font></a>
+                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(text)};">
+                                  <span style="color:${esc(accent2)};font-weight:400;">Tel:</span> <a href="tel:${esc(tel)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(text)};">${esc(tel)}</font></a>
                                 </td>
                               </tr>
                             </tbody>
@@ -200,166 +140,151 @@ export default function SignatureBuilder() {
 
   <div><br></div>
 
-  <table cellpadding="0" style="border-radius:0px;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;caption-side:bottom;border-collapse:collapse;">
+  <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;">
     <tbody>
       <tr>
         <td style="display:block;padding:15px 0 0 0;">
           <strong>Visita mi LinkedIn</strong>:
-          <a href="${esc(linkedin)}" style="color:${esc(accent1)};text-decoration:none;"><font style="color:${esc(
-      accent1
-    )};">${esc(linkedinLabel)}</font></a>
+          <a href="${esc(linkedin)}" style="color:${esc(accent1)};text-decoration:none;"><font style="color:${esc(accent1)};">${esc(linkedinLabel)}</font></a>
           <div>
             <strong>Reserva tu reunión:</strong>
-            <a href="${esc(booking)}" style="color:${esc(accent1)};text-decoration:none;"><font style="color:${esc(
-      accent1
-    )};">${esc(bookingLabel)}</font></a>
+            <a href="${esc(booking)}" style="color:${esc(accent1)};text-decoration:none;"><font style="color:${esc(accent1)};">${esc(bookingLabel)}</font></a>
           </div>
 
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;"><br>Este mensaje y sus archivos adjuntos van dirigidos exclusivamente a su destinatario, pudiendo contener información confidencial sometida a secreto profesional. No está permitida su reproducción o distribución sin la autorización expresa de ${esc(
-            legalCompany
-          )}. Si usted no es el destinatario final por favor elimínelo e infórmenos por esta vía.</font></span></p>
+          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;"><br>Este mensaje y sus archivos adjuntos van dirigidos exclusivamente a su destinatario, pudiendo contener información confidencial sometida a secreto profesional. No está permitida su reproducción o distribución sin la autorización expresa de ${esc(legalCompany)}. Si usted no es el destinatario final por favor elimínelo e infórmenos por esta vía.</font></span></p>
 
           <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Información de Protección de Datos Personales:</font></span></p>
 
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Normativa: RGPD (UE) 2016/679 y LOPD-GDD 3/2018; Responsable: ${esc(
-            legalCompany
-          )}; Finalidad: La gestión de clientes administrativa y comercial; Derechos: Puede ejercitar sus derechos de acceso, rectificación, supresión u olvido, limitación, oposición y portabilidad, enviando un correo electrónico a </font></span><span style="font-size:12px;"><a href="mailto:privacy@odoo.com" style="color:${esc(
-      accent1
-    )};text-decoration:none;"><font style="color:#636363;">privacy@odoo.com</font></a></span><span style="font-size:12px;"><font style="color:#636363;">. Asimismo, puede dirigirse a la Autoridad de Control en materia de Protección de Datos competente para obtener información adicional o presentar una reclamación; Cesiones: No está previsto la cesión de datos personales a terceros, salvo la existencia de una obligación legal; Plazo de conservación: Los datos proporcionados se conservarán mientras se mantenga la relación comercial o durante los años necesarios para cumplir con las obligaciones legales. Si usted no desea recibir nuestra información, póngase en contacto con nosotros enviando un correo electrónico a: </font></span><span style="font-size:12px;"><a href="mailto:privacy@odoo.com" style="color:${esc(
-      accent1
-    )};text-decoration:none;"><font style="color:#636363;">privacy@odoo.com</font></a></span></p>
+          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Normativa: RGPD (UE) 2016/679 y LOPD-GDD 3/2018; Responsable: ${esc(legalCompany)}; Finalidad: La gestión de clientes administrativa y comercial; Derechos: Puede ejercitar sus derechos de acceso, rectificación, supresión u olvido, limitación, oposición y portabilidad, enviando un correo electrónico a </font></span><span style="font-size:12px;"><a href="mailto:privacy@odoo.com" style="color:${esc(accent1)};text-decoration:none;"><font style="color:#636363;">privacy@odoo.com</font></a></span><span style="font-size:12px;"><font style="color:#636363;">. Asimismo, puede dirigirse a la Autoridad de Control en materia de Protección de Datos competente para obtener información adicional o presentar una reclamación; Cesiones: No está previsto la cesión de datos personales a terceros, salvo la existencia de una obligación legal; Plazo de conservación: Los datos proporcionados se conservarán mientras se mantenga la relación comercial o durante los años necesarios para cumplir con las obligaciones legales. Si usted no desea recibir nuestra información, póngase en contacto con nosotros enviando un correo electrónico a: </font></span><span style="font-size:12px;"><a href="mailto:privacy@odoo.com" style="color:${esc(accent1)};text-decoration:none;"><font style="color:#636363;">privacy@odoo.com</font></a></span></p>
 
           <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Datos identificativos:</font></span></p>
 
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">${esc(
-            legalCompany
-          )}, ${esc(legalId)}, ${esc(legalAddress)}</font></span></p>
+          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">${esc(legalCompany)}, ${esc(legalId)}, ${esc(legalAddress)}</font></span></p>
         </td>
       </tr>
     </tbody>
   </table>
 </div>`;
 
-    htmlRef.current = html;
-    return html;
-  }, [form]);
+          htmlRef.current = html;
+          return html;
+        }, [form]);
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(htmlRef.current);
-      alert("HTML copiado al portapapeles ✔");
-    } catch (e) {
-      console.error(e);
-      alert("No pude copiar. Prueba a descargar el archivo .html");
-    }
-  };
+        const copyToClipboard = async () => {
+          try {
+            await navigator.clipboard.writeText(htmlRef.current);
+            alert("HTML copiado al portapapeles ✔");
+          } catch (e) {
+            console.error(e);
+            alert("No pude copiar. Prueba a descargar el archivo .html");
+          }
+        };
 
-  const downloadHTML = () => {
-    const blob = new Blob([htmlRef.current], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${(form.nombre || "firma").replace(/\s+/g, "_")}_firma_odoo.html`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
+        const downloadHTML = () => {
+          const blob = new Blob([htmlRef.current], { type: "text/html;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${(form.nombre || "firma").replace(/\s+/g, "_")}_firma_odoo.html`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        };
 
-  const resetDefaults = () => {
-    setForm({
-      nombre: "",
-      puesto: "Business Advisor",
-      empresa: "Odoo",
-      email: "",
-      tel: "+34911870757",
-      website: "https://www.odoo.com",
-      websiteLabel: "www.odoo.com",
-      linkedin: "https://www.linkedin.com/",
-      linkedinLabel: "linkedin.com/",
-      booking: "https://www.odoo.com/book/",
-      bookingLabel: "https://www.odoo.com/book/",
-      avatarUrl: "",
-      accent1: form.accent1,
-      accent2: form.accent2,
-      text: form.text,
-      legalCompany: form.legalCompany,
-      legalId: form.legalId,
-      legalAddress: form.legalAddress,
-    });
-  };
+        const resetDefaults = () => {
+          setForm({
+            nombre: "",
+            puesto: "Business Advisor",
+            empresa: "Odoo",
+            email: "",
+            tel: "+34911870757",
+            website: "https://www.odoo.com",
+            websiteLabel: "www.odoo.com",
+            linkedin: "https://www.linkedin.com/",
+            linkedinLabel: "linkedin.com/",
+            booking: "https://www.odoo.com/book/",
+            bookingLabel: "https://www.odoo.com/book/",
+            avatarUrl: "",        // ⬅️ ahora también se limpia la imagen
+            accent1: form.accent1,
+            accent2: form.accent2,
+            text: form.text,
+            legalCompany: form.legalCompany,
+            legalId: form.legalId,
+            legalAddress: form.legalAddress,
+          });
+        };
 
-  return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-white">
-      {/* Panel de configuración */}
-      <div className="space-y-6">
-        <header className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Generador de firma Odoo</h1>
-          <div className="text-sm opacity-70">HTML compatible con clientes de correo</div>
-        </header>
+        return (
+          <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-white">
+            {/* Panel de configuración */}
+            <div className="space-y-6">
+              <header className="flex items-center justify-between">
+                <h1 className="text-2xl font-semibold">Generador de firma Odoo</h1>
+                <div className="text-sm opacity-70">HTML compatible con clientes de correo</div>
+              </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Nombre" name="nombre" value={form.nombre} onChange={handleChange} />
-          <Field label="Puesto" name="puesto" value={form.puesto} onChange={handleChange} />
-          <Field label="Empresa" name="empresa" value={form.empresa} onChange={handleChange} />
-          <Field label="Email" name="email" value={form.email} onChange={handleChange} />
-          <Field label="Teléfono" name="tel" value={form.tel} onChange={handleChange} />
-          <Field label="Website (URL)" name="website" value={form.website} onChange={handleChange} />
-          <Field label="Website (texto)" name="websiteLabel" value={form.websiteLabel} onChange={handleChange} />
-          <Field label="LinkedIn (URL)" name="linkedin" value={form.linkedin} onChange={handleChange} />
-          <Field label="LinkedIn (texto)" name="linkedinLabel" value={form.linkedinLabel} onChange={handleChange} />
-          <Field label="Booking (URL)" name="booking" value={form.booking} onChange={handleChange} />
-          <Field label="Booking (texto)" name="bookingLabel" value={form.bookingLabel} onChange={handleChange} />
-          <Field label="Foto (URL)" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} />
-        </section>
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Nombre" name="nombre" value={form.nombre} onChange={handleChange} />
+                <Field label="Puesto" name="puesto" value={form.puesto} onChange={handleChange} />
+                <Field label="Empresa" name="empresa" value={form.empresa} onChange={handleChange} />
+                <Field label="Email" name="email" value={form.email} onChange={handleChange} />
+                <Field label="Teléfono" name="tel" value={form.tel} onChange={handleChange} />
+                <Field label="Website (URL)" name="website" value={form.website} onChange={handleChange} />
+                <Field label="Website (texto)" name="websiteLabel" value={form.websiteLabel} onChange={handleChange} />
+                <Field label="LinkedIn (URL)" name="linkedin" value={form.linkedin} onChange={handleChange} />
+                <Field label="LinkedIn (texto)" name="linkedinLabel" value={form.linkedinLabel} onChange={handleChange} />
+                <Field label="Booking (URL)" name="booking" value={form.booking} onChange={handleChange} />
+                <Field label="Booking (texto)" name="bookingLabel" value={form.bookingLabel} onChange={handleChange} />
+                <Field label="Foto (URL)" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} />
+              </section>
 
-        <details className="rounded-2xl border p-4">
-          <summary className="cursor-pointer font-medium">Colores y legales</summary>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="Color enlaces" name="accent1" value={form.accent1} onChange={handleChange} />
-            <Field label="Color etiquetas" name="accent2" value={form.accent2} onChange={handleChange} />
-            <Field label="Color texto" name="text" value={form.text} onChange={handleChange} />
-            <Field label="Empresa legal" name="legalCompany" value={form.legalCompany} onChange={handleChange} />
-            <Field label="CIF/NIF" name="legalId" value={form.legalId} onChange={handleChange} />
-            <Field label="Dirección legal" name="legalAddress" value={form.legalAddress} onChange={handleChange} />
+              <details className="rounded-2xl border p-4">
+                <summary className="cursor-pointer font-medium">Colores y legales</summary>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field label="Color enlaces" name="accent1" value={form.accent1} onChange={handleChange} />
+                  <Field label="Color etiquetas" name="accent2" value={form.accent2} onChange={handleChange} />
+                  <Field label="Color texto" name="text" value={form.text} onChange={handleChange} />
+                  <Field label="Empresa legal" name="legalCompany" value={form.legalCompany} onChange={handleChange} />
+                  <Field label="CIF/NIF" name="legalId" value={form.legalId} onChange={handleChange} />
+                  <Field label="Dirección legal" name="legalAddress" value={form.legalAddress} onChange={handleChange} />
+                </div>
+              </details>
+
+              <div className="flex flex-wrap gap-3">
+                <button onClick={copyToClipboard} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Copiar HTML</button>
+                <button onClick={downloadHTML} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Descargar .html</button>
+                <button onClick={resetDefaults} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Limpiar datos</button>
+              </div>
+            </div>
+
+            {/* Previsualización */}
+            <div className="bg-neutral-50 rounded-2xl border shadow-inner p-4">
+              <h2 className="text-lg font-medium mb-3">Previsualización</h2>
+              <div className="bg-white rounded-xl border p-4 overflow-auto max-h-[75vh]">
+                {/* Render "seguro" usando dangerouslySetInnerHTML porque es HTML controlado */}
+                <div dangerouslySetInnerHTML={{ __html: generatedHTML }} />
+              </div>
+              <p className="mt-3 text-sm opacity-70">Consejo: copia el HTML y pégalo en la sección de firma de Gmail/Outlook (modo HTML cuando sea posible).</p>
+            </div>
           </div>
-        </details>
+        );
+      }
 
-        <div className="flex flex-wrap gap-3">
-          <button onClick={copyToClipboard} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Copiar HTML</button>
-          <button onClick={downloadHTML} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Descargar .html</button>
-          <button onClick={resetDefaults} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Limpiar datos</button>
-        </div>
-      </div>
-
-      {/* Previsualización */}
-      <div className="bg-neutral-50 rounded-2xl border shadow-inner p-4">
-        <h2 className="text-lg font-medium mb-3">Previsualización</h2>
-        <div className="bg-white rounded-xl border p-4 overflow-auto max-h-[75vh]">
-          {/* Render "seguro" usando dangerouslySetInnerHTML porque es HTML controlado */}
-          <div dangerouslySetInnerHTML={{ __html: generatedHTML }} />
-        </div>
-        <p className="mt-3 text-sm opacity-70">Consejo: copia el HTML y pégalo en la sección de firma de Gmail/Outlook (modo HTML cuando sea posible).</p>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, name, value, onChange }) {
-  return (
-    <label className="block">
-      <span className="text-sm text-neutral-700">{label}</span>
-      <input
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="mt-1 w-full rounded-xl border px-3 py-2 focus:outline-none focus:ring-2"
-        placeholder={label}
-      />
-    </label>
-  );
-}
-
+      function Field({ label, name, value, onChange }) {
+        return (
+          <label className="block">
+            <span className="text-sm text-neutral-700">{label}</span>
+            <input
+              name={name}
+              value={value}
+              onChange={onChange}
+              className="mt-1 w-full rounded-xl border px-3 py-2 focus:outline-none focus:ring-2"
+              placeholder={label}
+            />
+          </label>
+        );
+      }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<SignatureBuilder />);
     </script>
