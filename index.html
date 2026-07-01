@@ -2,291 +2,74 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Generador de firma Odoo</title>
-    <!-- Tailwind por CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React por CDN -->
+    <script>
+      tailwind.config = {theme:{extend:{colors:{odoo:{primary:'#714B67',teal:'#017E84',gray:'#8F8F8F',blush:'#F7F4F6',ink:'#2F2430',line:'#E7DFE6'}},boxShadow:{soft:'0 16px 40px rgba(113, 75, 103, 0.10)',panel:'0 12px 30px rgba(47, 36, 48, 0.08)'},borderRadius:{xl2:'1.25rem'}}}}
+    </script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- Babel para poder pegar JSX en el navegador -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { margin:0; font-family:'Inter',sans-serif; color:#2f2430; background:radial-gradient(circle at top left, rgba(113, 75, 103, 0.10), transparent 30%), radial-gradient(circle at top right, rgba(1, 126, 132, 0.08), transparent 28%), linear-gradient(180deg, #fcfbfc 0%, #f6f2f5 100%); }
+      .grid-bg { background-image:linear-gradient(rgba(113, 75, 103, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(113, 75, 103, 0.045) 1px, transparent 1px); background-size:26px 26px; background-position:center; }
+      .glass { background:rgba(255,255,255,0.78); backdrop-filter:blur(12px); }
+      .signature-preview table,.signature-preview td,.signature-preview p,.signature-preview a,.signature-preview span,.signature-preview img { max-width:none; }
+      .signature-preview { overflow:auto; }
+      textarea.code-area { font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    </style>
   </head>
-  <body class="bg-white">
+  <body>
     <div id="root"></div>
-
     <script type="text/babel">
-      // ⬇️ En CDN NO uses "import/export".
-      // Toma los hooks desde React (global)
-      const { useMemo, useState, useRef } = React;
-
-      // Firma Builder — Single-file React component
+      const { useMemo, useRef, useState } = React;
+      const TEMPLATES = [
+        { id: 'executive', name: 'Executive', description: 'Compacta, sobria y pensada para equipos corporativos.', layout: 'stacked', avatarShape: 'rounded', divider: 'line', note: 'Ideal para firmas homogéneas entre equipos de ventas y consultoría.' },
+        { id: 'spotlight', name: 'Spotlight', description: 'Con foco en la identidad visual y mejor separación de bloques.', layout: 'split', avatarShape: 'square', divider: 'bar', note: 'Buena para perfiles con foto y CTA de agenda.' },
+        { id: 'minimal', name: 'Minimal', description: 'Limpia y ligera, con fuerte legibilidad en clientes de correo.', layout: 'compact', avatarShape: 'circle', divider: 'line', note: 'Pensada para máxima compatibilidad y dark mode más estable.' },
+        { id: 'partner', name: 'Partner', description: 'Más institucional, con bloque legal destacado y enlaces ordenados.', layout: 'stacked', avatarShape: 'circle', divider: 'bar', note: 'Útil cuando quieres enfatizar marca y datos corporativos.' }
+      ];
+      const EMAIL_CLIENT_GUIDE = ['Nombre y cargo primero, para que la jerarquía sea clara en un vistazo.','Máximo 2 colores de apoyo: morado Odoo y turquesa para enlaces o detalles.','Tipografía segura, tamaño legible y HTML limpio para Gmail y Outlook.','Vista previa inmediata para validar antes de copiar la firma o el código.','Sube la imagen a un sitio con URL pública y accesible, como imgbb o imgur, antes de pegarla en la firma.'];
+      function Field({ label, name, value, onChange, placeholder, type = 'text' }) { return <label className="block"><span className="mb-2 block text-sm font-medium text-odoo-ink">{label}</span><input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder} className="h-12 w-full rounded-xl border border-odoo-line bg-white px-4 text-[15px] text-odoo-ink shadow-sm outline-none transition placeholder:text-[#a79da5] focus:border-odoo-teal focus:ring-4 focus:ring-cyan-100" /></label>; }
+      function ColorField({ label, name, value, onChange }) { return <label className="block"><span className="mb-2 block text-sm font-medium text-odoo-ink">{label}</span><div className="flex h-12 items-center gap-3 rounded-xl border border-odoo-line bg-white px-3 shadow-sm"><input type="color" name={name} value={value} onChange={onChange} className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0" /><input type="text" name={name} value={value} onChange={onChange} className="w-full border-0 bg-transparent text-[15px] text-odoo-ink outline-none" /></div></label>; }
+      function SectionCard({ eyebrow, title, description, children }) { return <section className="rounded-[24px] border border-white/70 bg-white/88 p-6 shadow-panel backdrop-blur md:p-7"><div className="mb-5"><p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">{eyebrow}</p><h2 className="text-xl font-semibold tracking-tight text-odoo-ink">{title}</h2>{description && <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f6670]">{description}</p>}</div>{children}</section>; }
+      function LogoMark() { return <div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-odoo-primary text-white shadow-soft"><svg viewBox="0 0 64 64" className="h-6 w-6" fill="none" aria-hidden="true"><path d="M18 32c0-7.732 6.268-14 14-14h14v28H32c-7.732 0-14-6.268-14-14Z" fill="currentColor" opacity="0.92"/><circle cx="45" cy="32" r="11" stroke="white" strokeWidth="4.5"/><circle cx="22" cy="32" r="4.2" fill="white"/></svg></div><div><p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-odoo-teal">Odoo Signature</p><h1 className="text-lg font-semibold tracking-tight text-odoo-ink">Generador profesional de firma</h1></div></div>; }
       function SignatureBuilder() {
-        const [form, setForm] = useState({
-          nombre: "Nicolás Robles",
-          puesto: "Business Advisor",
-          empresa: "Odoo",
-          email: "nrob@odoo.com",
-          tel: "+34911870757",
-          website: "https://www.odoo.com",
-          websiteLabel: "www.odoo.com",
-          linkedin: "https://www.linkedin.com/in/nicolas-x-robles/",
-          linkedinLabel: "linkedin.com/in/nicolas-x-robles",
-          booking: "https://www.odoo.com/book/64dfbeee",
-          bookingLabel: "https://www.odoo.com/book/64dfbeee",
-          avatarUrl: "https://img.mysignature.io/p/e/6/6/e6697d47-7ad2-5c57-97b2-0046c2d0b5ed.png?time=1756382801&uid=878639&sid=1679601",
-          accent1: "#008f8c", // enlaces
-          accent2: "#017e84", // labels
-          text: "#000001",
-          legalCompany: "ODOO ERP SP, S.L.",
-          legalId: "B72659014",
-          legalAddress: "AV. CORTES VALENCIANAS, 58, BAJO 10 - 46015 - VALENCIA - 911870701",
-        });
+        const [form, setForm] = useState({ nombre:'', puesto:'', empresa:'Odoo', email:'', tel:'', website:'https://www.odoo.com/es', websiteLabel:'odoo.com/es', linkedin:'', linkedinLabel:'LinkedIn', booking:'', bookingLabel:'Agenda una reunión', avatarUrl:'', accent1:'#714B67', accent2:'#017E84', text:'#2F2430', legalCompany:'Odoo ERP SP, S.L.', legalId:'B72659014', legalAddress:'Av. Cortes Valencianas, 58, bajo 10 · 46015 · Valencia · España', disclaimer:`Este mensaje y sus archivos adjuntos van dirigidos exclusivamente a su destinatario, pudiendo contener información confidencial sometida a secreto profesional. No está permitida su reproducción o distribución sin la autorización expresa de ODOO ERP SP, S.L. Si usted no es el destinatario final por favor elimínelo e infórmenos por esta vía.
 
-        const htmlRef = useRef("");
+Información de Protección de Datos Personales:
 
-        const handleChange = (e) => {
-          const { name, value } = e.target;
-          setForm((f) => ({ ...f, [name]: value }));
-        };
+Normativa: RGPD (UE) 2016/679 y LOPD-GDD 3/2018; Responsable: ODOO ERP SP, S.L.; Finalidad: La gestión de clientes administrativa y comercial; Derechos: Puede ejercitar sus derechos de acceso, rectificación, supresión u olvido, limitación, oposición y portabilidad, enviando un correo electrónico a privacy@odoo.com. Asimismo, puede dirigirse a la Autoridad de Control en materia de Protección de Datos competente para obtener información adicional o presentar una reclamación; Cesiones: No está previsto la cesión de datos personales a terceros, salvo la existencia de una obligación legal; Plazo de conservación: Los datos proporcionados se conservarán mientras se mantenga la relación comercial o durante los años necesarios para cumplir con las obligaciones legales. Si usted no desea recibir nuestra información, póngase en contacto con nosotros enviando un correo electrónico a la siguiente dirección: privacy@odoo.com
 
-        const generatedHTML = useMemo(() => {
-          const {
-            nombre, puesto, empresa, email, tel, website, websiteLabel,
-            linkedin, linkedinLabel, booking, bookingLabel,
-            avatarUrl, accent1, accent2, text,
-            legalCompany, legalId, legalAddress,
-          } = form;
+Datos identificativos:
 
-          const esc = (s) =>
-            String(s || "")
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/\"/g, "&quot;");
-
-          const html = `
-<div data-oe-version="2.0">
-  <table cellpadding="0" width="500" style="border-radius:0px;border-style:none;padding:0px;margin:0px;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
-    <tbody>
-      <tr>
-        <td style="margin:0.1px;padding:0;">
-          <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;width:387px;" width="387">
-            <tbody>
-              <tr>
-                <td valign="top" style="margin:0.1px;padding:0px 10px 0px 0px;position:relative;">
-                  <img src="${esc(avatarUrl)}" style="border-style:none;padding:0;margin:0;vertical-align:middle;display:block;min-width:114px;width:114px;height:114px;border-radius:50%;" alt="" width="114" height="114">
-                </td>
-                <td style="border-left:1px solid ${esc(text)};margin:0.1px;padding:0px 10px;font:14.4px/18.3px Arial, Helvetica, sans-serif;color:${esc(text)};" valign="middle" width="20.5">
-                  <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;color:${esc(text)};font-size:14.4px;font-family:Arial, Helvetica, sans-serif;">
-                    <tbody><tr><td style="padding:4px 0 0 0;">&nbsp;<a href="${esc(linkedin)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;"></a></td></tr></tbody>
-                  </table>
-                </td>
-                <td style="padding:0px 10px 0px 0px;position:relative;width:241.094px;" valign="top" width="241.094">
-                  <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
-                    <tbody>
-                      <tr>
-                        <td style="padding:0 0 10px 0;position:relative;">
-                          <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
-                            <tbody>
-                              <tr style="height:22.1016px;">
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:22.1px;font-size:17.3px;margin:0.1px;padding:0;color:${esc(text)};">
-                                  <span><b>${esc(nombre)}</b></span>
-                                </td>
-                              </tr>
-                              <tr style="height:26.2969px;">
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:4px 0;color:${esc(text)};">
-                                  <span>${esc(puesto)}</span> en <span>${esc(empresa)}</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;font-size:14.4px;">
-                            <tbody>
-                              <tr>
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(text)};">
-                                  <span style="color:${esc(accent2)};font-weight:400;">e-Mail:</span> <a href="mailto:${esc(email)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(text)};">${esc(email)}</font></a>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(text)};">
-                                  <span style="color:${esc(accent2)};font-weight:400;">Website</span><span>: </span>
-                                  <a href="${esc(website)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(text)};">${esc(websiteLabel)}</font></a>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td style="font-family:Arial, Helvetica, sans-serif;line-height:18.3px;font-size:14.4px;margin:0.1px;padding:0;color:${esc(text)};">
-                                  <span style="color:${esc(accent2)};font-weight:400;">Tel:</span> <a href="tel:${esc(tel)}" target="_blank" style="color:${esc(accent1)};text-decoration:none;font-family:Arial, Helvetica, sans-serif;font-weight:400;"><font style="color:${esc(text)};">${esc(tel)}</font></a>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div><br></div>
-
-  <table cellpadding="0" style="border-style:none;padding:0;margin:0;border-width:0;caption-side:bottom;border-collapse:collapse;">
-    <tbody>
-      <tr>
-        <td style="display:block;padding:15px 0 0 0;">
-          <strong>Visita mi LinkedIn</strong>:
-          <a href="${esc(linkedin)}" style="color:${esc(accent1)};text-decoration:none;"><font style="color:${esc(accent1)};">${esc(linkedinLabel)}</font></a>
-          <div>
-            <strong>Reserva tu reunión:</strong>
-            <a href="${esc(booking)}" style="color:${esc(accent1)};text-decoration:none;"><font style="color:${esc(accent1)};">${esc(bookingLabel)}</font></a>
-          </div>
-
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;"><br>Este mensaje y sus archivos adjuntos van dirigidos exclusivamente a su destinatario, pudiendo contener información confidencial sometida a secreto profesional. No está permitida su reproducción o distribución sin la autorización expresa de ${esc(legalCompany)}. Si usted no es el destinatario final por favor elimínelo e infórmenos por esta vía.</font></span></p>
-
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Información de Protección de Datos Personales:</font></span></p>
-
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Normativa: RGPD (UE) 2016/679 y LOPD-GDD 3/2018; Responsable: ${esc(legalCompany)}; Finalidad: La gestión de clientes administrativa y comercial; Derechos: Puede ejercitar sus derechos de acceso, rectificación, supresión u olvido, limitación, oposición y portabilidad, enviando un correo electrónico a </font></span><span style="font-size:12px;"><a href="mailto:privacy@odoo.com" style="color:${esc(accent1)};text-decoration:none;"><font style="color:#636363;">privacy@odoo.com</font></a></span><span style="font-size:12px;"><font style="color:#636363;">. Asimismo, puede dirigirse a la Autoridad de Control en materia de Protección de Datos competente para obtener información adicional o presentar una reclamación; Cesiones: No está previsto la cesión de datos personales a terceros, salvo la existencia de una obligación legal; Plazo de conservación: Los datos proporcionados se conservarán mientras se mantenga la relación comercial o durante los años necesarios para cumplir con las obligaciones legales. Si usted no desea recibir nuestra información, póngase en contacto con nosotros enviando un correo electrónico a: </font></span><span style="font-size:12px;"><a href="mailto:privacy@odoo.com" style="color:${esc(accent1)};text-decoration:none;"><font style="color:#636363;">privacy@odoo.com</font></a></span></p>
-
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">Datos identificativos:</font></span></p>
-
-          <p style="margin:0 0 16px 0;"><span style="font-size:12px;"><font style="color:#636363;">${esc(legalCompany)}, ${esc(legalId)}, ${esc(legalAddress)}</font></span></p>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>`;
-
-          htmlRef.current = html;
-          return html;
-        }, [form]);
-
-        const copyToClipboard = async () => {
-          try {
-            await navigator.clipboard.writeText(htmlRef.current);
-            alert("HTML copiado al portapapeles ✔");
-          } catch (e) {
-            console.error(e);
-            alert("No pude copiar. Prueba a descargar el archivo .html");
-          }
-        };
-
-        const downloadHTML = () => {
-          const blob = new Blob([htmlRef.current], { type: "text/html;charset=utf-8" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${(form.nombre || "firma").replace(/\s+/g, "_")}_firma_odoo.html`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-        };
-
-        const resetDefaults = () => {
-          setForm({
-            nombre: "",
-            puesto: "Business Advisor",
-            empresa: "Odoo",
-            email: "",
-            tel: "+34911870757",
-            website: "https://www.odoo.com",
-            websiteLabel: "www.odoo.com",
-            linkedin: "https://www.linkedin.com/",
-            linkedinLabel: "linkedin.com/",
-            booking: "https://www.odoo.com/book/",
-            bookingLabel: "https://www.odoo.com/book/",
-            avatarUrl: "",        // ⬅️ ahora también se limpia la imagen
-            accent1: form.accent1,
-            accent2: form.accent2,
-            text: form.text,
-            legalCompany: form.legalCompany,
-            legalId: form.legalId,
-            legalAddress: form.legalAddress,
-          });
-        };
-
-        return (
-          <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-white">
-            {/* Panel de configuración */}
-            <div className="space-y-6">
-              <header className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Generador de firma Odoo</h1>
-                <div className="text-sm opacity-70">HTML compatible con clientes de correo</div>
-              </header>
-
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Nombre" name="nombre" value={form.nombre} onChange={handleChange} />
-                <Field label="Puesto" name="puesto" value={form.puesto} onChange={handleChange} />
-                <Field label="Empresa" name="empresa" value={form.empresa} onChange={handleChange} />
-                <Field label="Email" name="email" value={form.email} onChange={handleChange} />
-                <Field label="Teléfono" name="tel" value={form.tel} onChange={handleChange} />
-                <Field label="Website (URL)" name="website" value={form.website} onChange={handleChange} />
-                <Field label="Website (texto)" name="websiteLabel" value={form.websiteLabel} onChange={handleChange} />
-                <Field label="LinkedIn (URL)" name="linkedin" value={form.linkedin} onChange={handleChange} />
-                <Field label="LinkedIn (texto)" name="linkedinLabel" value={form.linkedinLabel} onChange={handleChange} />
-                <Field label="Booking (URL)" name="booking" value={form.booking} onChange={handleChange} />
-                <Field label="Booking (texto)" name="bookingLabel" value={form.bookingLabel} onChange={handleChange} />
-                <Field label="Foto (URL)" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} />
-              </section>
-
-              <details className="rounded-2xl border p-4">
-                <summary className="cursor-pointer font-medium">Colores y legales</summary>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Field label="Color enlaces" name="accent1" value={form.accent1} onChange={handleChange} />
-                  <Field label="Color etiquetas" name="accent2" value={form.accent2} onChange={handleChange} />
-                  <Field label="Color texto" name="text" value={form.text} onChange={handleChange} />
-                  <Field label="Empresa legal" name="legalCompany" value={form.legalCompany} onChange={handleChange} />
-                  <Field label="CIF/NIF" name="legalId" value={form.legalId} onChange={handleChange} />
-                  <Field label="Dirección legal" name="legalAddress" value={form.legalAddress} onChange={handleChange} />
-                </div>
-              </details>
-
-              <div className="flex flex-wrap gap-3">
-                <button onClick={copyToClipboard} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Copiar HTML</button>
-                <button onClick={downloadHTML} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Descargar .html</button>
-                <button onClick={resetDefaults} className="px-4 py-2 rounded-2xl shadow border hover:shadow-md">Limpiar datos</button>
-              </div>
-            </div>
-
-            {/* Previsualización */}
-            <div className="bg-neutral-50 rounded-2xl border shadow-inner p-4">
-              <h2 className="text-lg font-medium mb-3">Previsualización</h2>
-              <div className="bg-white rounded-xl border p-4 overflow-auto max-h-[75vh]">
-                {/* Render "seguro" usando dangerouslySetInnerHTML porque es HTML controlado */}
-                <div dangerouslySetInnerHTML={{ __html: generatedHTML }} />
-              </div>
-              <p className="mt-3 text-sm opacity-70">Consejo: copia el HTML y pégalo en la sección de firma de Gmail/Outlook (modo HTML cuando sea posible).</p>
-            </div>
-          </div>
-        );
+ODOO ERP SP, S.L., B72659014, AV. CORTES VALENCIANAS, 58, BAJO 10 - 46015 - VALENCIA - 911870701` });
+        const [selectedTemplate, setSelectedTemplate] = useState('executive');
+        const htmlRef = useRef('');
+        const currentTemplate = TEMPLATES.find((tpl) => tpl.id === selectedTemplate) || TEMPLATES[0];
+        const handleChange = (e) => { const { name, value } = e.target; setForm((prev) => ({ ...prev, [name]: value })); };
+        const escapeHtml = (value = '') => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        const signatureHTML = useMemo(() => {
+          const avatarRadius = currentTemplate.avatarShape === 'circle' ? '999px' : currentTemplate.avatarShape === 'square' ? '18px' : '14px';
+          const dividerStyle = currentTemplate.divider === 'bar' ? `background:${form.accent1};width:4px;border-radius:999px;` : `background:#d7ccd5;width:1px;`;
+          const avatarBlock = form.avatarUrl ? `<td style="vertical-align:top;padding-right:18px;"><img src="${escapeHtml(form.avatarUrl)}" alt="${escapeHtml(form.nombre)}" width="84" height="84" style="display:block;width:84px;height:84px;border-radius:${avatarRadius};object-fit:cover;border:1px solid #e6dde4;" /></td>` : '';
+          const links = [form.website && form.websiteLabel ? `<a href="${escapeHtml(form.website)}" style="color:${form.accent2};text-decoration:none;">${escapeHtml(form.websiteLabel)}</a>` : '', form.linkedin && form.linkedinLabel ? `<a href="${escapeHtml(form.linkedin)}" style="color:${form.accent2};text-decoration:none;">${escapeHtml(form.linkedinLabel)}</a>` : '', form.booking && form.bookingLabel ? `<a href="${escapeHtml(form.booking)}" style="color:${form.accent2};text-decoration:none;">${escapeHtml(form.bookingLabel)}</a>` : ''].filter(Boolean).join(' &nbsp;·&nbsp; ');
+          const compactMeta = currentTemplate.layout === 'compact'; const nameSize = compactMeta ? '18px' : '20px'; const titleSize = compactMeta ? '13px' : '14px'; const bodySize = compactMeta ? '12px' : '13px'; const legalSize = compactMeta ? '10px' : '11px';
+          return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Inter,Arial,sans-serif;color:${form.text};max-width:640px;width:100%;border-collapse:collapse;"><tr>${avatarBlock}<td style="vertical-align:top;"><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:100%;"><tr><td style="padding-bottom:12px;"><div style="font-size:${nameSize};font-weight:700;line-height:1.15;color:${form.accent1};">${escapeHtml(form.nombre)}</div><div style="margin-top:4px;font-size:${titleSize};font-weight:600;line-height:1.4;color:${form.text};">${escapeHtml(form.puesto)}${form.empresa ? ` · ${escapeHtml(form.empresa)}` : ''}</div></td></tr><tr><td style="padding:0 0 12px 0;"><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:100%;"><tr><td style="vertical-align:top;${dividerStyle}"></td><td style="padding-left:14px;"><div style="font-size:${bodySize};line-height:1.7;color:${form.text};">${form.email ? `<div><a href="mailto:${escapeHtml(form.email)}" style="color:${form.text};text-decoration:none;">${escapeHtml(form.email)}</a></div>` : ''}${form.tel ? `<div><a href="tel:${escapeHtml(form.tel)}" style="color:${form.text};text-decoration:none;">${escapeHtml(form.tel)}</a></div>` : ''}${links ? `<div style="margin-top:4px;">${links}</div>` : ''}</div></td></tr></table></td></tr><tr><td style="padding-top:4px;border-top:1px solid #e7dfe6;"><div style="padding-top:10px;font-size:${legalSize};line-height:1.6;color:#756d76;"><strong style="color:${form.accent1};font-weight:600;">${escapeHtml(form.legalCompany)}</strong>${form.legalId ? ` · ${escapeHtml(form.legalId)}` : ''}${form.legalAddress ? `<div>${escapeHtml(form.legalAddress)}</div>` : ''}${form.disclaimer ? `<div style="margin-top:6px;">${escapeHtml(form.disclaimer)}</div>` : ''}</div></td></tr></table></td></tr></table>`.trim();
+        }, [form, currentTemplate]);
+        htmlRef.current = signatureHTML;
+        const copyHtml = async () => { try { await navigator.clipboard.writeText(signatureHTML); alert('HTML de la firma copiado.'); } catch { alert('No se pudo copiar automáticamente. Puedes copiarlo desde el cuadro de código.'); } };
+        const copyPreview = async () => { const wrapper = document.createElement('div'); wrapper.innerHTML = signatureHTML; const node = wrapper.firstElementChild; if (!node) return; document.body.appendChild(wrapper); const range = document.createRange(); range.selectNode(node); const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); try { document.execCommand('copy'); alert('Firma visual copiada. Pégala directamente en Gmail o Outlook.'); } catch { alert('No se pudo copiar la vista renderizada automáticamente.'); } selection.removeAllRanges(); document.body.removeChild(wrapper); };
+        return <div className="min-h-screen"><header className="border-b border-white/60"><div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-8 md:px-8 lg:px-10"><div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div className="max-w-3xl"><LogoMark /><p className="mt-6 inline-flex rounded-full border border-odoo-primary/10 bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-odoo-primary">Inspirado en la claridad de HubSpot y la marca visual de Odoo</p><h2 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-odoo-ink md:text-5xl">Crea firmas consistentes, elegantes y listas para copiar en cualquier cliente de correo.</h2><p className="mt-4 max-w-2xl text-base leading-7 text-[#675d67] md:text-lg">El flujo se centra en una edición clara, vista previa inmediata y una salida HTML limpia para que todo el equipo mantenga una firma profesional y homogénea.</p></div><div className="grid gap-3 sm:grid-cols-2 lg:w-[360px]"><div className="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-panel"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">Paleta</p><p className="mt-2 text-sm leading-6 text-[#675d67]">Morado Odoo como base, turquesa para acciones y neutros suaves para un look más corporativo.</p></div><div className="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-panel"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">UX</p><p className="mt-2 text-sm leading-6 text-[#675d67]">Plantillas, personalización, preview sticky y exportación rápida.</p></div></div></div></div></header><main className="grid-bg"><div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 md:px-8 lg:grid-cols-[minmax(0,1.06fr)_420px] lg:px-10 lg:py-10"><div className="space-y-6"><SectionCard eyebrow="Datos" title="Información personal y corporativa" description="Los campos personales quedan vacíos con ejemplos como placeholder para que cada compañero complete su propia firma sin editar contenido precargado."><div className="grid gap-4 md:grid-cols-2"><Field label="Nombre completo" name="nombre" value={form.nombre} onChange={handleChange} placeholder="Nicolás Robles" /><Field label="Puesto" name="puesto" value={form.puesto} onChange={handleChange} placeholder="Business Advisor" /><Field label="Empresa" name="empresa" value={form.empresa} onChange={handleChange} /><Field label="Email" name="email" value={form.email} onChange={handleChange} type="email" placeholder="nombre.apellido@odoo.com" /><Field label="Teléfono" name="tel" value={form.tel} onChange={handleChange} placeholder="+34 600 123 456" /><Field label="Foto / avatar URL" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://ejemplo.com/imagenes/mifoto.jpg" /><Field label="Website URL" name="website" value={form.website} onChange={handleChange} /><Field label="Texto website" name="websiteLabel" value={form.websiteLabel} onChange={handleChange} /><Field label="LinkedIn URL" name="linkedin" value={form.linkedin} onChange={handleChange} placeholder="https://www.linkedin.com/in/tu-perfil" /><Field label="Texto LinkedIn" name="linkedinLabel" value={form.linkedinLabel} onChange={handleChange} /><Field label="URL agenda / CTA" name="booking" value={form.booking} onChange={handleChange} placeholder="https://www.odoo.com/book/tuequipo" /><Field label="Texto CTA" name="bookingLabel" value={form.bookingLabel} onChange={handleChange} /></div></SectionCard><SectionCard eyebrow="Plantillas" title="Elige un estilo base" description="La estructura imita el enfoque de los generadores más pulidos: primero seleccionas un layout claro y luego personalizas cada bloque sin perder consistencia visual."><div className="grid gap-4 md:grid-cols-2">{TEMPLATES.map((template) => { const active = selectedTemplate === template.id; return <button key={template.id} type="button" onClick={() => setSelectedTemplate(template.id)} className={`rounded-[22px] border p-5 text-left transition ${active ? 'border-odoo-primary bg-[#faf7fa] shadow-soft' : 'border-odoo-line bg-white hover:border-odoo-primary/40 hover:shadow-panel'}`}><div className="flex items-start justify-between gap-4"><div><h3 className="text-base font-semibold text-odoo-ink">{template.name}</h3><p className="mt-2 text-sm leading-6 text-[#6f6670]">{template.description}</p></div><span className={`mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full border ${active ? 'border-odoo-primary bg-odoo-primary text-white' : 'border-odoo-line bg-white text-transparent'}`}>•</span></div><div className="mt-5 rounded-2xl border border-odoo-line bg-[#fcfafc] p-4"><div className="flex items-center gap-3"><div className={`h-11 w-11 ${template.avatarShape === 'circle' ? 'rounded-full' : template.avatarShape === 'square' ? 'rounded-[14px]' : 'rounded-xl'} bg-[#dbcfd8]`} /><div className="flex-1"><div className="h-3 w-28 rounded-full bg-[#714B67]" /><div className="mt-2 h-2.5 w-36 rounded-full bg-[#c9bdc7]" /></div></div><div className="mt-4 flex gap-3"><div className={`${template.divider === 'bar' ? 'w-1.5 rounded-full bg-[#714B67]' : 'w-px bg-[#d7ccd5]'}`} /><div className="flex-1 space-y-2"><div className="h-2.5 w-32 rounded-full bg-[#d7ccd5]" /><div className="h-2.5 w-44 rounded-full bg-[#d7ccd5]" /><div className="h-2.5 w-40 rounded-full bg-[#8cd2d6]" /></div></div></div><p className="mt-4 text-xs leading-5 text-[#786d77]">{template.note}</p></button>; })}</div></SectionCard><SectionCard eyebrow="Estilo" title="Personaliza colores y legales" description="La interfaz toma la paleta oficial de Odoo y deja el turquesa como apoyo visual para enlaces y microdetalles."><div className="grid gap-4 md:grid-cols-3"><ColorField label="Color principal" name="accent1" value={form.accent1} onChange={handleChange} /><ColorField label="Color secundario" name="accent2" value={form.accent2} onChange={handleChange} /><ColorField label="Color de texto" name="text" value={form.text} onChange={handleChange} /></div><div className="mt-5 grid gap-4 md:grid-cols-2"><Field label="Razón social" name="legalCompany" value={form.legalCompany} onChange={handleChange} /><Field label="CIF / identificador" name="legalId" value={form.legalId} onChange={handleChange} /></div><div className="mt-4"><label className="block"><span className="mb-2 block text-sm font-medium text-odoo-ink">Dirección legal</span><input type="text" name="legalAddress" value={form.legalAddress} onChange={handleChange} className="h-12 w-full rounded-xl border border-odoo-line bg-white px-4 text-[15px] text-odoo-ink shadow-sm outline-none transition focus:border-odoo-teal focus:ring-4 focus:ring-cyan-100" /></label></div><div className="mt-4"><label className="block"><span className="mb-2 block text-sm font-medium text-odoo-ink">Disclaimer</span><textarea name="disclaimer" rows="4" value={form.disclaimer} onChange={handleChange} className="w-full rounded-xl border border-odoo-line bg-white px-4 py-3 text-[15px] text-odoo-ink shadow-sm outline-none transition focus:border-odoo-teal focus:ring-4 focus:ring-cyan-100" /></label></div></SectionCard><SectionCard eyebrow="Exportación" title="Copia la firma o el HTML" description="Puedes copiar la firma renderizada para pegarla en un editor visual, o copiar el HTML para configuraciones que respeten mejor el código fuente."><div className="flex flex-col gap-3 md:flex-row"><button type="button" onClick={copyPreview} className="inline-flex h-12 items-center justify-center rounded-xl bg-odoo-primary px-5 text-sm font-semibold text-white shadow-soft transition hover:bg-[#633f59]">Copiar firma visual</button><button type="button" onClick={copyHtml} className="inline-flex h-12 items-center justify-center rounded-xl border border-odoo-line bg-white px-5 text-sm font-semibold text-odoo-ink transition hover:border-odoo-primary/40 hover:bg-[#faf7fa]">Copiar HTML</button></div><div className="mt-5 rounded-[22px] border border-odoo-line bg-[#241c25] p-4 shadow-panel"><div className="mb-3 flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Código HTML</p><span className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/60">Listo para Gmail, Outlook y Apple Mail</span></div><textarea readOnly value={signatureHTML} rows="12" className="code-area w-full rounded-2xl border border-white/10 bg-[#1a141b] p-4 text-xs leading-6 text-[#f4ecf2] outline-none" /></div></SectionCard></div><aside className="lg:sticky lg:top-6 lg:self-start"><div className="space-y-6"><div className="glass rounded-[28px] border border-white/70 p-6 shadow-soft"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">Vista previa</p><h3 className="mt-2 text-2xl font-semibold tracking-tight text-odoo-ink">Resultado en tiempo real</h3></div><span className="rounded-full bg-[#f4ecf2] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-odoo-primary">{currentTemplate.name}</span></div><div className="mt-5 rounded-[26px] border border-odoo-line bg-white p-4 shadow-panel"><div className="mb-4 flex items-center gap-2 border-b border-odoo-line pb-4"><span className="h-3 w-3 rounded-full bg-[#f19b9b]" /><span className="h-3 w-3 rounded-full bg-[#f6d27a]" /><span className="h-3 w-3 rounded-full bg-[#97d8a4]" /><span className="ml-2 text-xs font-medium text-[#857b84]">Vista previa de firma</span></div><div className="signature-preview rounded-[18px] bg-[#fffefe] p-3 sm:p-4"><div dangerouslySetInnerHTML={{ __html: signatureHTML }} /></div></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl border border-odoo-line bg-white p-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">Principio</p><p className="mt-2 text-sm leading-6 text-[#685f69]">Jerarquía clara: nombre, cargo, contacto y bloque legal sin ruido visual.</p></div><div className="rounded-2xl border border-odoo-line bg-white p-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">Compatibilidad</p><p className="mt-2 text-sm leading-6 text-[#685f69]">Uso de tablas y estilos inline para funcionar mejor en clientes de correo.</p></div></div></div><div className="rounded-[28px] border border-white/70 bg-white/88 p-6 shadow-panel"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-odoo-teal">Buenas prácticas</p><h3 className="mt-2 text-xl font-semibold tracking-tight text-odoo-ink">Checklist para todo el equipo</h3><ul className="mt-4 space-y-3">{EMAIL_CLIENT_GUIDE.map((item) => (<li key={item} className="flex gap-3 text-sm leading-6 text-[#685f69]"><span className="mt-1 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[#f4ecf2] text-[11px] font-bold text-odoo-primary">✓</span><span>{item}</span></li>))}</ul></div></div></aside></div></main></div>;
       }
-
-      function Field({ label, name, value, onChange }) {
-        return (
-          <label className="block">
-            <span className="text-sm text-neutral-700">{label}</span>
-            <input
-              name={name}
-              value={value}
-              onChange={onChange}
-              className="mt-1 w-full rounded-xl border px-3 py-2 focus:outline-none focus:ring-2"
-              placeholder={label}
-            />
-          </label>
-        );
-      }
-
-      ReactDOM.createRoot(document.getElementById("root")).render(<SignatureBuilder />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<SignatureBuilder />);
     </script>
   </body>
 </html>
